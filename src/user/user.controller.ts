@@ -4,10 +4,14 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Req,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -30,5 +34,11 @@ export class UserController {
     });
 
     return user;
+  }
+
+  @UseGuards(AuthGuard('local'))
+  @Post('login')
+  async login(@Request() req) {
+    return req.user;
   }
 }

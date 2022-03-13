@@ -29,4 +29,8 @@ export class UserService {
 
     return this.sanitilizeUser(createdUser);
   }
+
+  async findOne(username: string): Promise<User | undefined> {
+    return this.userModel.findOne({ username: username });
+  }
 }
