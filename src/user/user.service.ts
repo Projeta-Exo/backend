@@ -6,16 +6,27 @@ import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectModel('User') private userModel: Model<User>) {}
+  sanitilizeUser(user: User) {
+    const sanitilized = user.toObject();
+    delete sanitilized['password'];
+    return sanitilized;
+  }
 
-    async create(userDto: RegisterDto) {
-        const { email } = userDto;
-        const user = await this.userModel.findOne({ email })
-        if (user) {
-            throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
-        }
+  constructor(@InjectModel('User') private userModel: Model<User>) {}
 
-        const createdUser = new this.userModel(userDto);
-        await createdUser.save()
+  async create(userDto: RegisterDto) {
+    const { email } = userDto;
+
+    const user = await this.userModel.findOne({ email });
+
+    if (user) {
+      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
+
+    const createdUser = new this.userModel(userDto);
+
+    await createdUser.save();
+
+    return this.sanitilizeUser(createdUser);
+  }
 }
