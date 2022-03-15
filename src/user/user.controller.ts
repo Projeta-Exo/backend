@@ -1,10 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
-  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -12,10 +12,22 @@ import { RegisterDto } from './dto/register.dto';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcrypt';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private authService: AuthService,
+  ) {}
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('list')
+  async list() {
+    return this.userService.list()
+  }
 
   @Post('register')
   async register(@Body() userDto: RegisterDto) {
@@ -38,7 +50,7 @@ export class UserController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  async login(@Request() req) {
-    return req.user;
+  async login(@Request() req: any) {
+    return this.authService.login(req.user);
   }
 }
